@@ -1,0 +1,7 @@
+{
+    "python.formatting.autopep8Path": "/Users/freyawest/Library/Python/3.9/lib/python/site-packages",
+    "python.linting.pylintEnabled": true,
+    "python.analysis.diagnosticSeverityOverrides": {
+      "reportGeneralTypeIssues": "none"
+    }
+ }
