@@ -28,17 +28,17 @@ class HandleRequests(BaseHTTPRequestHandler):
             pass
 
         return (resource, id)
-    # This is a Docstring it should be at the beginning of all classes and functions
-    # It gives a description of the class or function
 
     # Here's a class function
 
     def do_GET(self):
         """Handles GET requests to the server
         """
+
+        response = {}
+
         # Set the response code to 'Ok'
-        self._set_headers(200)
-        response = {}  # Default response
+
         # Parse the URL and capture the tuple that is returned
         (resource, id) = self.parse_url(self.path)
 
@@ -46,28 +46,57 @@ class HandleRequests(BaseHTTPRequestHandler):
             if id is not None:
                 response = get_single_animal(id)
 
+                if response is not None:
+                    self._set_headers(200)
+                else:
+                    self._set_headers(404)
+                    response = {"message": "Oops this animal escaped!"}
+
             else:
+                self._set_headers(200)
                 response = get_all_animals()
 
-        if resource == "locations":
+        elif resource == "locations":
             if id is not None:
                 response = get_single_location(id)
 
+                if response is not None:
+                    self._set_headers(200)
+                else:
+                    self._set_headers(404)
+                    response = {
+                        "message": "Please try again with a location in this universe."}
+
             else:
+                self._set_headers(200)
                 response = get_all_locations()
 
-        if resource == "customers":
+        elif resource == "customers":
             if id is not None:
                 response = get_single_customer(id)
 
+                if response is not None:
+                    self._set_headers(200)
+                else:
+                    self._set_headers(404)
+                    response = {"message": "No customer here, sorry."}
+
             else:
+                self._set_headers(200)
                 response = get_all_customers()
 
-        if response == "employees":
+        elif response == "employees":
             if id is not None:
                 response = get_single_employee(id)
 
+                if response is not None:
+                    self._set_headers(200)
+                else:
+                    self._set_headers(404)
+                    response = {"message": "Oops this employee escaped!"}
+
             else:
+                self._set_headers(200)
                 response = get_all_employees()
 
         # Send a JSON formatted string as a response
@@ -77,8 +106,6 @@ class HandleRequests(BaseHTTPRequestHandler):
     # It handles any POST request.
     def do_POST(self):
         """Handles POST requests to the server"""
-
-        self._set_headers(201)
         content_len = int(self.headers.get('content-length', 0))
         post_body = self.rfile.read(content_len)
 
@@ -91,7 +118,7 @@ class HandleRequests(BaseHTTPRequestHandler):
         # Initialize new item
         new_animal = None
         new_location = None
-        # new_employee = None
+        new_employee = None
         new_customer = None
 
         # Add a new animal to the list. Don't worry about
@@ -104,9 +131,15 @@ class HandleRequests(BaseHTTPRequestHandler):
         self.wfile.write(json.dumps(new_animal).encode())
 
         if resource == "locations":
-            new_location = create_location(post_body)
+            if post_body["address"]:
+                self._set_headers(201)
+                created_resource = create_location(post_body)
+            # else:
+            #     self._set_headers(400)
+            #     created_resource = {
+            #         "message": "please enter a name and location"}
 
-        self.wfile.write(json.dumps(new_location).encode())
+        self.wfile.write(json.dumps(created_resource).encode())
 
         if resource == "customers":
             new_customer = create_customer(post_body)
@@ -129,7 +162,6 @@ class HandleRequests(BaseHTTPRequestHandler):
         # Parse the URL
         (resource, id) = self.parse_url(self.path)
 
-        # Delete a single animal from the list
         if resource == "animals":
             update_animal(id, post_body)
 
