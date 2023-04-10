@@ -117,39 +117,35 @@ class HandleRequests(BaseHTTPRequestHandler):
 
         # Initialize new item
         new_animal = None
-        new_location = None
+        created_resource = None
         new_employee = None
         new_customer = None
 
-        # Add a new animal to the list. Don't worry about
-        # the orange squiggle, you'll define the create_animal
-        # function next.
         if resource == "animals":
             new_animal = create_animal(post_body)
 
         # Encode the new animal and send in response
-        self.wfile.write(json.dumps(new_animal).encode())
+            self.wfile.write(json.dumps(new_animal).encode())
 
         if resource == "locations":
-            if post_body["address"]:
+            if "address" in post_body and "name" in post_body:
                 self._set_headers(201)
                 created_resource = create_location(post_body)
-            # else:
-            #     self._set_headers(400)
-            #     created_resource = {
-            #         "message": "please enter a name and location"}
-
-        self.wfile.write(json.dumps(created_resource).encode())
+            else:
+                self._set_headers(400)
+                created_resource = {
+                    "message": f'{"please enter a name" if "name" not in post_body else ""}{"please enter a location" if "address" not in post_body else ""}'}
+            self.wfile.write(json.dumps(created_resource).encode())
 
         if resource == "customers":
             new_customer = create_customer(post_body)
 
-        self.wfile.write(json.dumps(new_customer).encode())
+            self.wfile.write(json.dumps(new_customer).encode())
 
         if resource == "employees":
             new_employee = create_employee(post_body)
 
-        self.wfile.write(json.dumps(new_employee).encode())
+            self.wfile.write(json.dumps(new_employee).encode())
 
     # A method that handles any PUT request.
     def do_PUT(self):
