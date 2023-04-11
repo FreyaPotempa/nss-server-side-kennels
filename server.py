@@ -2,12 +2,6 @@ import json
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from views import get_all_animals, get_single_animal, create_animal, delete_animal, update_animal, get_all_employees, get_single_employee, create_employee, update_employee, delete_employee, get_all_locations, create_location, get_single_location, update_location, delete_location,  get_single_customer, get_all_customers, create_customer, update_customer, delete_customer
 
-
-# Here's a class. It inherits from another class.
-# For now, think of a class as a container for functions that
-# work together for a common purpose. In this case, that
-# common purpose is to respond to HTTP requests from a client.
-
 method_mapper = {
     "animals": {
         "all": get_all_animals,
@@ -24,6 +18,10 @@ method_mapper = {
         "single": get_single_location
     }
 }
+# Here's a class. It inherits from another class.
+# For now, think of a class as a container for functions that
+# work together for a common purpose. In this case, that
+# common purpose is to respond to HTTP requests from a client.
 
 
 class HandleRequests(BaseHTTPRequestHandler):
