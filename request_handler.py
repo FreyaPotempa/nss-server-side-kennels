@@ -116,16 +116,21 @@ class HandleRequests(BaseHTTPRequestHandler):
         (resource, id) = self.parse_url(self.path)
 
         # Initialize new item
-        new_animal = None
         created_resource = None
         new_employee = None
         new_customer = None
 
         if resource == "animals":
-            new_animal = create_animal(post_body)
-
+            if "name" in post_body and "species" in post_body and "status" in post_body:
+                self._set_headers(201)
+                created_resource = create_animal(post_body)
+            else:
+                self._set_headers(400)
+                created_resource = {
+                    "message": f'{"please enter a name" if "name" not in post_body else ""}{"please enter species" if "species" not in post_body else ""}{"please enter status" if "status" not in post_body else ""}'
+                }
         # Encode the new animal and send in response
-            self.wfile.write(json.dumps(new_animal).encode())
+            self.wfile.write(json.dumps(created_resource).encode())
 
         if resource == "locations":
             if "address" in post_body and "name" in post_body:
@@ -188,28 +193,36 @@ class HandleRequests(BaseHTTPRequestHandler):
 
     def do_DELETE(self):
         '''delete handler'''
-        # Set a 204 response code
-        self._set_headers(204)
+        # Set a 204 response cod
 
         # Parse the URL
         (resource, id) = self.parse_url(self.path)
 
         # Delete a single animal from the list
         if resource == "animals":
+            self._set_headers(204)
             delete_animal(id)
 
         if resource == "employees":
+            self._set_headers(204)
             delete_employee(id)
+            self.wfile.write("".encode())
 
         if resource == "locations":
+            self._set_headers(204)
             delete_location(id)
+            self.wfile.write("".encode())
 
         if resource == "customers":
-            delete_customer(id)
+            self._set_headers(405)
+            response = {"message": "this is not allowed"}
+            self.wfile.write(json.dumps(response).encode())
+
+            # delete_customer(id)
         # Encode the new animal and send in response
-        self.wfile.write("".encode())
 
     # Another method! This supports requests with the OPTIONS verb.
+
     def do_OPTIONS(self):
         """Sets the options headers
         """
