@@ -8,6 +8,23 @@ from views import get_all_animals, get_single_animal, create_animal, delete_anim
 # work together for a common purpose. In this case, that
 # common purpose is to respond to HTTP requests from a client.
 
+method_mapper = {
+    "animals": {
+        "all": get_all_animals,
+        "single": get_single_animal},
+    "employees": {
+        "all": get_all_employees,
+        "single": get_single_animal},
+    "customers": {
+        "all": get_all_customers,
+        "single": get_single_customer
+    },
+    "locations": {
+        "all": get_all_locations,
+        "single": get_single_location
+    }
+}
+
 
 class HandleRequests(BaseHTTPRequestHandler):
     '''handles the fetch functions'''
@@ -33,48 +50,33 @@ class HandleRequests(BaseHTTPRequestHandler):
 
     # Here's a class function
 
+    def get_all_or_single(self, resource, id):
+        '''function that parses all the different get functions'''
+        if id is not None:
+            response = method_mapper[resource]["single"](id)
+
+            if response is not None:
+                self._set_headers(200)
+            else:
+                self._set_headers(404)
+                response = ''
+        else:
+            self._set_headers(200)
+            response = method_mapper[resource]["all"]()
+
+        return response
+
     def do_GET(self):
         """Handles GET requests to the server
         """
-        # Set the response code to 'Ok'
-        self._set_headers(200)
-        response = {}  # Default response
-        # Parse the URL and capture the tuple that is returned
+        response = None
         (resource, id) = self.parse_url(self.path)
-
-        if resource == "animals":
-            if id is not None:
-                response = get_single_animal(id)
-
-            else:
-                response = get_all_animals()
-
-        if resource == "locations":
-            if id is not None:
-                response = get_single_location(id)
-
-            else:
-                response = get_all_locations()
-
-        if resource == "customers":
-            if id is not None:
-                response = get_single_customer(id)
-
-            else:
-                response = get_all_customers()
-
-        if response == "employees":
-            if id is not None:
-                response = get_single_employee(id)
-
-            else:
-                response = get_all_employees()
-
-        # Send a JSON formatted string as a response
+        response = self.get_all_or_single(resource, id)
         self.wfile.write(json.dumps(response).encode())
 
     # Here's a method on the class that overrides the parent's method.
     # It handles any POST request.
+
     def do_POST(self):
         """Handles POST requests to the server"""
 
