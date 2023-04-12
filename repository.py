@@ -1,5 +1,5 @@
 DATABASE = {
-    "ANIMALS": [
+    "animals": [
         {
             "id": 1,
             "name": "Snickers",
@@ -25,7 +25,7 @@ DATABASE = {
             "status": "Admitted"
         }
     ],
-    "CUSTOMERS": [
+    "customers": [
         {
             "id": 1,
             "name": "Hope Kub"
@@ -39,7 +39,7 @@ DATABASE = {
             "name": "Cortez McKenzie"
         }
     ],
-    "EMPLOYEES": [
+    "employees": [
         {
             "id": 1,
             "name": "Jenna Solis"
@@ -53,7 +53,7 @@ DATABASE = {
             "name": "Teagan Langworth"
         }
     ],
-    "LOCATIONS": [
+    "locations": [
         {
             "id": 1,
             "name": "Nashville North",
@@ -68,12 +68,12 @@ DATABASE = {
 }
 
 
-def all(self, resource):
+def all(resource):
     """For GET requests to collection"""
+    print(resource)
 
-    # self._set_headers(200)
-    # response = DATABASE[resource]
-    pass
+    if resource in DATABASE.keys():
+        return DATABASE[resource]
 
 
 def retrieve():
