@@ -1,23 +1,6 @@
 import json
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from repository import all
-
-# method_mapper = {
-#     "animals": {
-#         "all": get_all_animals,
-#         "single": get_single_animal},
-#     "employees": {
-#         "all": get_all_employees,
-#         "single": get_single_employee},
-#     "customers": {
-#         "all": get_all_customers,
-#         "single": get_single_customer
-#     },
-#     "locations": {
-#         "all": get_all_locations,
-#         "single": get_single_location
-#     }
-# }
+from repository import all, create, delete, retrieve, update
 
 
 class HandleRequests(BaseHTTPRequestHandler):
@@ -52,114 +35,75 @@ class HandleRequests(BaseHTTPRequestHandler):
         response = {}
         self._set_headers(200)
         resource = self.parse_url(self.path)[0]
-        response = all(resource)
+        id = self.parse_url(self.path)[1]
+        if id is not None:
+            response = retrieve(resource, id)
+        else:
+            response = all(resource)
         self.wfile.write(json.dumps(response).encode())
 
-    # def do_POST(self):
-    #     """Handles POST requests to the server"""
+    def do_POST(self):
+        """Handles POST requests to the server"""
 
-    #     self._set_headers(201)
-    #     content_len = int(self.headers.get('content-length', 0))
-    #     post_body = self.rfile.read(content_len)
+        self._set_headers(201)
+        content_len = int(self.headers.get('content-length', 0))
+        post_body = self.rfile.read(content_len)
 
-    #     # Convert JSON string to a Python dictionary
-    #     post_body = json.loads(post_body)
+        # Convert JSON string to a Python dictionary
+        post_body = json.loads(post_body)
 
-    #     # Parse the URL
-    #     (resource, id) = self.parse_url(self.path)
+        # Parse the URL
+        (resource, id) = self.parse_url(self.path)
 
-    #     # Initialize new item
-    #     new_animal = None
-    #     new_location = None
-    #     # new_employee = None
-    #     new_customer = None
+        # Initialize new item
+        new_object = {}
 
-    #     # Add a new animal to the list. Don't worry about
-    #     # the orange squiggle, you'll define the create_animal
-    #     # function next.
-    #     if resource == "animals":
-    #         new_animal = create_animal(post_body)
+        # Add a new animal to the list. Don't worry about
+        new_object = create(resource, post_body)
 
-    #     # Encode the new animal and send in response
-    #     self.wfile.write(json.dumps(new_animal).encode())
+        # Encode the new object and send in response
+        self.wfile.write(json.dumps(new_object).encode())
 
-    #     if resource == "locations":
-    #         new_location = create_location(post_body)
+    def do_PUT(self):
+        """Handles PUT requests to the server"""
+        self._set_headers(204)
+        content_len = int(self.headers.get('content-length', 0))
+        post_body = self.rfile.read(content_len)
+        post_body = json.loads(post_body)
 
-    #     self.wfile.write(json.dumps(new_location).encode())
+        # Parse the URL
+        (resource, id) = self.parse_url(self.path)
 
-    #     if resource == "customers":
-    #         new_customer = create_customer(post_body)
+        update(resource, id, post_body)
 
-    #     self.wfile.write(json.dumps(new_customer).encode())
+        # Encode the new animal and send in response
+        self.wfile.write("".encode())
 
-    #     if resource == "employees":
-    #         new_employee = create_employee(post_body)
+    def _set_headers(self, status):
+        # Notice this Docstring also includes information about the arguments passed to the function
+        """Sets the status code, Content-Type and Access-Control-Allow-Origin
+        headers on the response
 
-    #     self.wfile.write(json.dumps(new_employee).encode())
+        Args:
+            status (number): the status code to return to the front end
+        """
+        self.send_response(status)
+        self.send_header('Content-type', 'application/json')
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.end_headers()
 
-    # # A method that handles any PUT request.
-    # def do_PUT(self):
-    #     """Handles PUT requests to the server"""
-    #     self._set_headers(204)
-    #     content_len = int(self.headers.get('content-length', 0))
-    #     post_body = self.rfile.read(content_len)
-    #     post_body = json.loads(post_body)
+    def do_DELETE(self):
+        '''delete handler'''
+        # Set a 204 response code
+        self._set_headers(204)
 
-    #     # Parse the URL
-    #     (resource, id) = self.parse_url(self.path)
+        # Parse the URL
+        (resource, id) = self.parse_url(self.path)
 
-    #     # Delete a single animal from the list
-    #     if resource == "animals":
-    #         update_animal(id, post_body)
-
-    #     if resource == "customers":
-    #         update_customer(id, post_body)
-
-    #     if resource == "employees":
-    #         update_employee(id, post_body)
-
-    #     if resource == "locations":
-    #         update_location(id, post_body)
-
-    #     # Encode the new animal and send in response
-    #     self.wfile.write("".encode())
-
-    # def _set_headers(self, status):
-    #     # Notice this Docstring also includes information about the arguments passed to the function
-    #     """Sets the status code, Content-Type and Access-Control-Allow-Origin
-    #     headers on the response
-
-    #     Args:
-    #         status (number): the status code to return to the front end
-    #     """
-    #     self.send_response(status)
-    #     self.send_header('Content-type', 'application/json')
-    #     self.send_header('Access-Control-Allow-Origin', '*')
-    #     self.end_headers()
-
-    # def do_DELETE(self):
-    #     '''delete handler'''
-    #     # Set a 204 response code
-    #     self._set_headers(204)
-
-    #     # Parse the URL
-    #     (resource, id) = self.parse_url(self.path)
-
-    #     # Delete a single animal from the list
-    #     if resource == "animals":
-    #         delete_animal(id)
-
-    #     if resource == "employees":
-    #         delete_employee(id)
-
-    #     if resource == "locations":
-    #         delete_location(id)
-
-    #     if resource == "customers":
-    #         delete_customer(id)
-    #     # Encode the new animal and send in response
-    #     self.wfile.write("".encode())
+        delete(resource, id)
+        # Delete a single animal from the list
+        # Encode the new animal and send in response
+        self.wfile.write("".encode())
 
     # Another method! This supports requests with the OPTIONS verb.
 

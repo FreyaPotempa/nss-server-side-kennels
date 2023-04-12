@@ -76,21 +76,54 @@ def all(resource):
         return DATABASE[resource]
 
 
-def retrieve():
+def retrieve(resource, id):
     """For GET requests to a single resource"""
-    pass
+    requested_resource = None
+
+    if resource in DATABASE.keys():
+        asset_list = DATABASE[resource]
+
+        for asset in asset_list:
+            if asset["id"] == id:
+                requested_resource = asset
+
+    return requested_resource
 
 
-def create():
+def create(resource, post_body):
     """For POST requests to a collection"""
-    pass
+    # passing the path with a variable of resource, and passing the new object to append
+    if resource in DATABASE.keys():
+        max_id = DATABASE[resource][-1]["id"]
+        new_id = max_id + 1
+        post_body["id"] = new_id
+
+        DATABASE[resource].append(post_body)
+
+        return post_body
 
 
-def update():
+def update(resource, id, post_body):
     """For PUT requests to a single resource"""
-    pass
+    if resource in DATABASE.keys():
+        asset_list = DATABASE[resource]
+
+        for index, asset in enumerate(asset_list):
+            if asset["id"] == id:
+                asset_list[index] = post_body
+                break
 
 
-def delete():
+def delete(resource, id):
     """For DELETE requests to a single resource"""
+    if resource in DATABASE.keys():
+        resource_index = -1
+
+        for index, asset in enumerate(DATABASE[resource]):
+            if asset["id"] == id:
+                resource_index = index
+
+        if resource_index >= 0:
+            DATABASE[resource].pop(resource_index)
+
     pass
