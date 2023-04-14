@@ -1,7 +1,7 @@
 import json
 from urllib.parse import urlparse, parse_qs
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from views import get_all_animals, get_all_employees, get_single_animal, get_animals_by_location, get_animals_by_status, delete_animal, get_employees_by_location, get_all_locations, create_location, get_single_location, update_location, delete_location,  get_single_customer, get_all_customers, create_customer, update_customer, delete_customer, get_customer_by_email, get_single_employee
+from views import get_all_animals, get_all_employees, get_single_animal, get_animals_by_location, get_animals_by_status, delete_animal, update_animal, get_employees_by_location, get_all_locations, create_location, get_single_location, update_location, delete_location,  get_single_customer, get_all_customers, create_customer, update_customer, delete_customer, get_customer_by_email, get_single_employee
 
 
 # Here's a class. It inherits from another class.
@@ -57,6 +57,11 @@ class HandleRequests(BaseHTTPRequestHandler):
                     response = get_single_employee(id)
                 else:
                     response = get_all_employees()
+            elif resource == "locations":
+                if id is not None:
+                    response = get_single_location(id)
+                else:
+                    response = get_all_locations()
 
         else:  # There is a ? in the path, run the query param functions
             (resource, query) = parsed
@@ -121,7 +126,7 @@ class HandleRequests(BaseHTTPRequestHandler):
     # A method that handles any PUT request.
     def do_PUT(self):
         """Handles PUT requests to the server"""
-        self._set_headers(204)
+
         content_len = int(self.headers.get('content-length', 0))
         post_body = self.rfile.read(content_len)
         post_body = json.loads(post_body)
@@ -129,21 +134,27 @@ class HandleRequests(BaseHTTPRequestHandler):
         # Parse the URL
         (resource, id) = self.parse_url(self.path)
 
-        # Delete a single animal from the list
+        success = False
+
         if resource == "animals":
-            update_animal(id, post_body)
+            success = update_animal(id, post_body)
 
-        if resource == "customers":
-            update_customer(id, post_body)
+            if success:
+                self._set_headers(204)
+            else:
+                self._set_headers(404)
 
-        if resource == "employees":
-            update_employee(id, post_body)
+        # if resource == "customers":
+        #     update_customer(id, post_body)
 
-        if resource == "locations":
-            update_location(id, post_body)
+        # if resource == "employees":
+        #     update_employee(id, post_body)
+
+        # if resource == "locations":
+        #     update_location(id, post_body)
 
         # Encode the new animal and send in response
-        self.wfile.write("".encode())
+        self.wfile.write(json.dumps(post_body).encode())
 
     def _set_headers(self, status):
         # Notice this Docstring also includes information about the arguments passed to the function
@@ -158,28 +169,28 @@ class HandleRequests(BaseHTTPRequestHandler):
         self.send_header('Access-Control-Allow-Origin', '*')
         self.end_headers()
 
-    def do_DELETE(self):
-        '''delete handler'''
-        # Set a 204 response code
-        self._set_headers(204)
+    # def do_DELETE(self):
+    #     '''delete handler'''
+    #     # Set a 204 response code
+    #     self._set_headers(204)
 
-        # Parse the URL
-        (resource, id) = self.parse_url(self.path)
+    #     # Parse the URL
+    #     (resource, id) = self.parse_url(self.path)
 
-        # Delete a single animal from the list
-        if resource == "animals":
-            delete_animal(id)
+    #     # Delete a single animal from the list
+    #     if resource == "animals":
+    #         delete_animal(id)
 
-        if resource == "employees":
-            delete_employee(id)
+    #     if resource == "employees":
+    #         delete_employee(id)
 
-        if resource == "locations":
-            delete_location(id)
+    #     if resource == "locations":
+    #         delete_location(id)
 
-        if resource == "customers":
-            delete_customer(id)
-        # Encode the new animal and send in response
-        self.wfile.write("".encode())
+    #     if resource == "customers":
+    #         delete_customer(id)
+    #     # Encode the new animal and send in response
+    #     self.wfile.write("".encode())
 
     # Another method! This supports requests with the OPTIONS verb.
     def do_OPTIONS(self):
