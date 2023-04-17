@@ -1,6 +1,6 @@
 import json
 import sqlite3
-from models import Employee
+from models import Employee, Location
 
 
 def get_all_employees():
@@ -17,8 +17,12 @@ def get_all_employees():
             e.id,
             e.name,
             e.address,
-            e.location_id
+            e.location_id,
+            l.name location_name,
+            l.address location_address
         FROM employee e
+        JOIN location l
+            ON l.id = e.location_id
         """)
 
         # Initialize an empty list to hold all animal representations
@@ -36,6 +40,11 @@ def get_all_employees():
             # Animal class above.
             employee = Employee(row['id'], row['name'],
                                 row['address'], row['location_id'])
+
+            location = Location(
+                row["id"], row["location_name"], row["location_address"])
+
+            employee.location = location.__dict__
 
             employees.append(employee.__dict__)
 
@@ -103,17 +112,29 @@ def get_employees_by_location(location):
             return None
 
 
-# def create_employee(employee):
-#     '''gets id value of last item in list to create new item'''
-#     max_id = EMPLOYEES[-1]["id"]
+def create_employee(new_employee):
+    '''create an animal'''
+    with sqlite3.connect("./kennel.sqlite3") as conn:
+        db_cursor = conn.cursor()
 
-#     new_id = max_id + 1
+        db_cursor.execute("""
+        INSERT INTO Employee
+            ( name, address, location_id )
+        VALUES
+            ( ?, ?, ? );
+        """, (new_employee['name'], new_employee['address'], new_employee['location_id']))
 
-#     employee["id"] = new_id
+        # The `lastrowid` property on the cursor will return
+        # the primary key of the last thing that got added to
+        # the database.
+        id = db_cursor.lastrowid
 
-#     EMPLOYEES.append(employee)
+        # Add the `id` property to the animal dictionary that
+        # was sent by the client so that the client sees the
+        # primary key in the response.
+        new_employee['id'] = id
 
-#     return employee
+    return new_employee
 
 
 # def update_employee(id, new_employee):
