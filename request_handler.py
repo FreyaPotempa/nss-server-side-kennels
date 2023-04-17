@@ -32,6 +32,23 @@ class HandleRequests(BaseHTTPRequestHandler):
 
     def do_GET(self):
         self._set_headers(200)
+        except ValueError:
+            pass
+
+        return (resource, id)
+
+    # Here's a class function
+
+    def do_GET(self):
+        """Handles GET requests to the server
+        """
+
+        response = {}
+
+        # Set the response code to 'Ok'
+
+        # Parse the URL and capture the tuple that is returned
+        (resource, id) = self.parse_url(self.path)
 
         response = {}
 
@@ -82,8 +99,6 @@ class HandleRequests(BaseHTTPRequestHandler):
 
     def do_POST(self):
         """Handles POST requests to the server"""
-
-        self._set_headers(201)
         content_len = int(self.headers.get('content-length', 0))
         post_body = self.rfile.read(content_len)
 
@@ -94,34 +109,41 @@ class HandleRequests(BaseHTTPRequestHandler):
         (resource, id) = self.parse_url(self.path)
 
         # Initialize new item
-        new_animal = None
-        new_location = None
-        # new_employee = None
+        created_resource = None
+        new_employee = None
         new_customer = None
 
-        # Add a new animal to the list. Don't worry about
-        # the orange squiggle, you'll define the create_animal
-        # function next.
         if resource == "animals":
-            new_animal = create_animal(post_body)
-
+            if "name" in post_body and "species" in post_body and "status" in post_body:
+                self._set_headers(201)
+                created_resource = create_animal(post_body)
+            else:
+                self._set_headers(400)
+                created_resource = {
+                    "message": f'{"please enter a name" if "name" not in post_body else ""}{"please enter species" if "species" not in post_body else ""}{"please enter status" if "status" not in post_body else ""}'
+                }
         # Encode the new animal and send in response
-        self.wfile.write(json.dumps(new_animal).encode())
+            self.wfile.write(json.dumps(created_resource).encode())
 
         if resource == "locations":
-            new_location = create_location(post_body)
-
-        self.wfile.write(json.dumps(new_location).encode())
+            if "address" in post_body and "name" in post_body:
+                self._set_headers(201)
+                created_resource = create_location(post_body)
+            else:
+                self._set_headers(400)
+                created_resource = {
+                    "message": f'{"please enter a name" if "name" not in post_body else ""}{"please enter a location" if "address" not in post_body else ""}'}
+            self.wfile.write(json.dumps(created_resource).encode())
 
         if resource == "customers":
             new_customer = create_customer(post_body)
 
-        self.wfile.write(json.dumps(new_customer).encode())
+            self.wfile.write(json.dumps(new_customer).encode())
 
         if resource == "employees":
             new_employee = create_employee(post_body)
 
-        self.wfile.write(json.dumps(new_employee).encode())
+            self.wfile.write(json.dumps(new_employee).encode())
 
     # A method that handles any PUT request.
     def do_PUT(self):
@@ -169,30 +191,39 @@ class HandleRequests(BaseHTTPRequestHandler):
         self.send_header('Access-Control-Allow-Origin', '*')
         self.end_headers()
 
-    # def do_DELETE(self):
-    #     '''delete handler'''
-    #     # Set a 204 response code
-    #     self._set_headers(204)
+    def do_DELETE(self):
+        '''delete handler'''
+        pass
+        # Set a 204 response cod
 
     #     # Parse the URL
     #     (resource, id) = self.parse_url(self.path)
 
-    #     # Delete a single animal from the list
-    #     if resource == "animals":
-    #         delete_animal(id)
+        # Delete a single animal from the list
+        if resource == "animals":
+            self._set_headers(204)
+            delete_animal(id)
 
-    #     if resource == "employees":
-    #         delete_employee(id)
+        if resource == "employees":
+            self._set_headers(204)
+            delete_employee(id)
+            self.wfile.write("".encode())
 
-    #     if resource == "locations":
-    #         delete_location(id)
+        if resource == "locations":
+            self._set_headers(204)
+            delete_location(id)
+            self.wfile.write("".encode())
 
-    #     if resource == "customers":
-    #         delete_customer(id)
-    #     # Encode the new animal and send in response
-    #     self.wfile.write("".encode())
+        if resource == "customers":
+            self._set_headers(405)
+            response = {"message": "this is not allowed"}
+            self.wfile.write(json.dumps(response).encode())
+
+            # delete_customer(id)
+        # Encode the new animal and send in response
 
     # Another method! This supports requests with the OPTIONS verb.
+
     def do_OPTIONS(self):
         """Sets the options headers
         """

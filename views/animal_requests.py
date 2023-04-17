@@ -1,6 +1,35 @@
 import sqlite3
 import json
 from models import Animal, Location, Customer
+from .location_requests import get_single_location
+from .customer_requests import get_single_customer
+
+ANIMALS = [
+    {
+        "id": 1,
+        "name": "Snickers",
+        "species": "Dog",
+        "locationId": 1,
+        "customerId": 4,
+        "status": "Admitted"
+    },
+    {
+        "id": 2,
+        "name": "Roman",
+        "species": "Dog",
+        "locationId": 1,
+        "customerId": 2,
+        "status": "Admitted"
+    },
+    {
+        "id": 3,
+        "name": "Blue",
+        "species": "Cat",
+        "locationId": 2,
+        "customerId": 1,
+        "status": "Admitted"
+    }
+]
 
 
 def get_all_animals():
