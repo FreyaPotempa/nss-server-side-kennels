@@ -21,6 +21,8 @@ def get_all_animals(query_params):
             if qs_key == "_sortBy":
                 if qs_value == "location":
                     sort_by = " ORDER BY location_id"
+                elif qs_value == "customer":
+                    sort_by = " ORDER BY customer_id"
 
             sql_to_execute = f"""
                 SELECT
@@ -31,10 +33,15 @@ def get_all_animals(query_params):
                     a.location_id,
                     a.customer_id,
                     l.name location_name,
-                    l.address location_address
+                    l.address location_address,
+                    c.name customer_name,
+                    c.address customer_address,
+                    c.email customer_email
                 FROM Animal a
                 JOIN `Location` l
                     ON l.id = a.location_id
+                JOIN `Customer` c
+                    ON c.id = a.customer_id
                 {sort_by}"""
 
         db_cursor.execute(sql_to_execute)
@@ -60,11 +67,10 @@ def get_all_animals(query_params):
             location = Location(
                 row['id'], row['location_name'], row['location_address'])
 
-            # customer = Customer(
-            #     row["id"], row["customer_name"], row["customer_address"], row["customer_email"])
-            # Add the dictionary representation of the location to the animal
+            customer = Customer(
+                row["id"], row["customer_name"], row["customer_address"], row["customer_email"])
             animal.location = location.__dict__
-            # animal.customer = customer.__dict__
+            animal.customer = customer.__dict__
 
             animals.append(animal.__dict__)
 
