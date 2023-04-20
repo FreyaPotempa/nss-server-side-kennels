@@ -15,46 +15,39 @@ class HandleRequests(BaseHTTPRequestHandler):
 
     def parse_url(self, path):
         """Parse the url into the resource and id"""
-        parsed_url = urlparse(path)
-        path_params = parsed_url.path.split('/')  # ['', 'animals', 1]
-        resource = path_params[1]
+        url_components = urlparse(path)
+        path_params = url_components.path.strip(
+            "/").split('/')  # ['', 'animals', 1]
+        query_params = []
 
-        if parsed_url.query:
-            query = parse_qs(parsed_url.query)
-            return (resource, query)
+        if url_components.query != "":
+            query_params = url_components.query.split("&")
 
-        pk = None
+        resource = path_params[0]
+        id = None
+
         try:
-            pk = int(path_params[2])
+            id = int(path_params[1])
         except (IndexError, ValueError):
             pass
-        return (resource, pk)
+        return (resource, id, query_params)
 
-    def do_GET(self):
-        self._set_headers(200)
-        except ValueError:
-            pass
+    # def do_GET(self):
+    #     except ValueError:
+    #         pass
 
-        return (resource, id)
-
-    # Here's a class function
+    #     return (resource, id)
 
     def do_GET(self):
         """Handles GET requests to the server
         """
-
-        response = {}
-
-        # Set the response code to 'Ok'
+        self._set_headers(200)
 
         # Parse the URL and capture the tuple that is returned
-        (resource, id) = self.parse_url(self.path)
+        parsed = self.parse_url(self.path)
+        (resource, id, query_params) = parsed
 
         response = {}
-
-        # Parse URL and store entire tuple in a variable
-        parsed = self.parse_url(self.path)
-
         # If the path does not include a query parameter, continue with the original if block
         if '?' not in self.path:
             (resource, id) = parsed
@@ -81,17 +74,17 @@ class HandleRequests(BaseHTTPRequestHandler):
                     response = get_all_locations()
 
         else:  # There is a ? in the path, run the query param functions
-            (resource, query) = parsed
+            (resource, id, query_params) = parsed
 
-            # see if the query dictionary has an email key
-            if query.get('email') and resource == 'customers':
-                response = get_customer_by_email(query['email'][0])
-            if query.get('location_id') and resource == 'animals':
-                response = get_animals_by_location(query['location_id'][0])
-            if query.get('location_id') and resource == 'employees':
-                response = get_employees_by_location(query['location_id'][0])
-            if query.get('status') and resource == 'animals':
-                response = get_animals_by_status(query['status'][0])
+            # # see if the query dictionary has an email key
+            # if query.get('email') and resource == 'customers':
+            #     response = get_customer_by_email(query['email'][0])
+            # if query.get('location_id') and resource == 'animals':
+            #     response = get_animals_by_location(query['location_id'][0])
+            # if query.get('location_id') and resource == 'employees':
+            #     response = get_employees_by_location(query['location_id'][0])
+            # if query.get('status') and resource == 'animals':
+            response = get_all_animals(query_params)
 
         self.wfile.write(json.dumps(response).encode())
 

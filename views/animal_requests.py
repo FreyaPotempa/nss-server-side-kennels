@@ -4,63 +4,40 @@ from models import Animal, Location, Customer
 from .location_requests import get_single_location
 from .customer_requests import get_single_customer
 
-ANIMALS = [
-    {
-        "id": 1,
-        "name": "Snickers",
-        "species": "Dog",
-        "locationId": 1,
-        "customerId": 4,
-        "status": "Admitted"
-    },
-    {
-        "id": 2,
-        "name": "Roman",
-        "species": "Dog",
-        "locationId": 1,
-        "customerId": 2,
-        "status": "Admitted"
-    },
-    {
-        "id": 3,
-        "name": "Blue",
-        "species": "Cat",
-        "locationId": 2,
-        "customerId": 1,
-        "status": "Admitted"
-    }
-]
 
-
-def get_all_animals():
+def get_all_animals(query_params):
     '''function to get all animals'''
     # Open a connection to the database
     with sqlite3.connect("./kennel.sqlite3") as conn:
-
-        # Just use these. It's a Black Box.
         conn.row_factory = sqlite3.Row
         db_cursor = conn.cursor()
 
-        # Write the SQL query to get the information you want
-        db_cursor.execute("""
-        SELECT
-            a.id,
-            a.name,
-            a.breed,
-            a.status,
-            a.location_id,
-            a.customer_id,
-            l.name location_name,
-            l.address location_address,
-            c.name customer_name,
-            c.address customer_address,
-            c.email customer_email
-        FROM Animal a
-        JOIN Location l
-            ON l.id = a.location_id
-        JOIN Customer c
-            ON c.id = a.customer_id
-        """)
+        sort_by = ""
+
+        if len(query_params) != 0:
+            param = query_params[0]
+            [qs_key, qs_value] = param.split("=")
+
+            if qs_key == "_sortBy":
+                if qs_value == "location":
+                    sort_by = " ORDER BY location_id"
+
+            sql_to_execute = f"""
+                SELECT
+                    a.id,
+                    a.name,
+                    a.breed,
+                    a.status,
+                    a.location_id,
+                    a.customer_id,
+                    l.name location_name,
+                    l.address location_address
+                FROM Animal a
+                JOIN `Location` l
+                    ON l.id = a.location_id
+                {sort_by}"""
+
+        db_cursor.execute(sql_to_execute)
 
         # Initialize an empty list to hold all animal representations
         animals = []
@@ -83,11 +60,11 @@ def get_all_animals():
             location = Location(
                 row['id'], row['location_name'], row['location_address'])
 
-            customer = Customer(
-                row["id"], row["customer_name"], row["customer_address"], row["customer_email"])
+            # customer = Customer(
+            #     row["id"], row["customer_name"], row["customer_address"], row["customer_email"])
             # Add the dictionary representation of the location to the animal
             animal.location = location.__dict__
-            animal.customer = customer.__dict__
+            # animal.customer = customer.__dict__
 
             animals.append(animal.__dict__)
 
