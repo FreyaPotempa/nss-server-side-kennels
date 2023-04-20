@@ -122,3 +122,10 @@ SELECT
         ON l.id = e.location_id
 
 SELECT * FROM Animal ORDER BY id DESC;
+
+SELECT
+            a.id,
+            a.name,
+            a.address,
+            (SELECT COUNT(*) FROM Animal WHERE location_id = a.id) AS animal_count
+        FROM location a

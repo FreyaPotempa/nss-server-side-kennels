@@ -2,19 +2,6 @@ import sqlite3
 import json
 from models import Location
 
-LOCATIONS = [
-    {
-        "id": 1,
-        "name": "Nashville North",
-        "address": "8422 Johnson Pike"
-    },
-    {
-        "id": 2,
-        "name": "Nashville South",
-        "address": "209 Emory Drive"
-    }
-]
-
 
 def get_all_locations():
     '''returns all locations'''
@@ -26,7 +13,8 @@ def get_all_locations():
         SELECT
             a.id,
             a.name,
-            a.address
+            a.address,
+            (SELECT COUNT(*) FROM Animal WHERE location_id = a.id) AS animal_count
         FROM location a
         """)
 
@@ -35,7 +23,8 @@ def get_all_locations():
         dataset = db_cursor.fetchall()
 
         for row in dataset:
-            location = Location(row["id"], row["name"], row["address"])
+            location = Location(row["id"], row["name"],
+                                row["address"], row['animal_count'])
 
             locations.append(location.__dict__)
 

@@ -49,32 +49,30 @@ class HandleRequests(BaseHTTPRequestHandler):
 
         response = {}
         # If the path does not include a query parameter, continue with the original if block
-        if '?' not in self.path:
-            (resource, id) = parsed
 
-            if resource == "animals":
-                if id is not None:
-                    response = get_single_animal(id)
-                else:
-                    response = get_all_animals()
-            elif resource == "customers":
-                if id is not None:
-                    response = get_single_customer(id)
-                else:
-                    response = get_all_customers()
-            elif resource == "employees":
-                if id is not None:
-                    response = get_single_employee(id)
-                else:
-                    response = get_all_employees()
-            elif resource == "locations":
-                if id is not None:
-                    response = get_single_location(id)
-                else:
-                    response = get_all_locations()
+        if resource == "animals":
+            if id is not None:
+                response = get_single_animal(id)
+            else:
+                response = get_all_animals(query_params)
+        elif resource == "customers":
+            if id is not None:
+                response = get_single_customer(id)
+            else:
+                response = get_all_customers()
+        elif resource == "employees":
+            if id is not None:
+                response = get_single_employee(id)
+            else:
+                response = get_all_employees()
+        elif resource == "locations":
+            if id is not None:
+                response = get_single_location(id)
+            else:
+                response = get_all_locations()
 
-        else:  # There is a ? in the path, run the query param functions
-            (resource, id, query_params) = parsed
+        # else:  # There is a ? in the path, run the query param functions
+            # (resource, id, query_params) = parsed
 
             # # see if the query dictionary has an email key
             # if query.get('email') and resource == 'customers':
@@ -84,7 +82,7 @@ class HandleRequests(BaseHTTPRequestHandler):
             # if query.get('location_id') and resource == 'employees':
             #     response = get_employees_by_location(query['location_id'][0])
             # if query.get('status') and resource == 'animals':
-            response = get_all_animals(query_params)
+            # response = get_all_animals(query_params)
 
         self.wfile.write(json.dumps(response).encode())
 
